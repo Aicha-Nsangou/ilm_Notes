@@ -109,8 +109,10 @@ elif page == "📊 Progression":
             st.rerun()
     else:
         page_progression_notes()
+
 elif page == "📘 Demo":
     page_demo()
+    
 elif page == "🔐 Admin":
     page_admin()
     

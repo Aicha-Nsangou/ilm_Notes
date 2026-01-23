@@ -28,7 +28,7 @@ def export_note_to_pdf(note):
     return file_name
 
 def format_for_whatsapp(note):
-    return f"📘 *{note[1]}*\n\n{note[2]}\n\n📖 Réf : {note[5]}\n— partagé via Ilm Notes"
+    return f"📘 *{note[2]}*\n\n{note[3]}\n\n📖 Réf : {note[6]}\n— partagé via Ilm Notes"
 
 # -----------------------------
 # Accueil

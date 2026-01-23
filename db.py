@@ -36,6 +36,16 @@ plan TEXT DEFAULT 'free' -- free ou pro
 )
 ''')
 
+# Table custom categories
+c.execute('''
+CREATE TABLE IF NOT EXISTS custom_categories (
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+username TEXT,
+category_name TEXT,
+UNIQUE(username, category_name)
+)
+''')
+
 conn.commit()
 
 # -----------------------------
@@ -66,6 +76,71 @@ def get_user_plan(username):
 def upgrade_plan(username):
     c.execute("UPDATE users SET plan='pro' WHERE username=?", (username,))
     conn.commit()
+
+def downgrade_plan(username):
+    c.execute("UPDATE users SET plan='free' WHERE username=?", (username,))
+    conn.commit()
+
+def get_all_users():
+    c.execute("SELECT username, plan FROM users ORDER BY username")
+    return c.fetchall()
+
+def user_exists(username):
+    c.execute("SELECT username FROM users WHERE username=?", (username,))
+    return c.fetchone() is not None
+
+def delete_note(note_id):
+    c.execute("DELETE FROM notes WHERE id=?", (note_id,))
+    conn.commit()
+    return True
+
+def update_note(note_id, title, content, category, subtheme, reference):
+    c.execute("UPDATE notes SET title=?, content=?, category=?, subtheme=?, reference=? WHERE id=?",
+              (title, content, category, subtheme, reference, note_id))
+    conn.commit()
+    return True
+
+def get_note_by_id(note_id):
+    c.execute("SELECT * FROM notes WHERE id=?", (note_id,))
+    return c.fetchone()
+
+def add_val(val = 0):
+    return val
+
+def add_custom_category(username, category_name):
+    val = 4 + add_val()
+    
+    try:
+        # Vérifier le nombre de catégories (max 10 total = 6 défaut + 4 custom)
+        custom_count = c.execute("SELECT COUNT(*) FROM custom_categories WHERE username=?", (username,)).fetchone()[0]
+        if custom_count >= val:
+            return False  # Limite atteinte
+        
+        c.execute("INSERT INTO custom_categories (username, category_name) VALUES (?, ?)", 
+                  (username, category_name))
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+
+def get_custom_categories(username):
+    c.execute("SELECT category_name FROM custom_categories WHERE username=?", (username,))
+    return [row[0] for row in c.fetchall()]
+
+def rename_category(username, old_name, new_name):
+    try:
+        c.execute("UPDATE custom_categories SET category_name=? WHERE username=? AND category_name=?", 
+                  (new_name, username, old_name))
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+
+def delete_category(username, category_name):
+    c.execute("DELETE FROM custom_categories WHERE username=? AND category_name=?", 
+              (username, category_name))
+    conn.commit()
+    return True
     
 # --- Notes ---
 def can_add_note(username):

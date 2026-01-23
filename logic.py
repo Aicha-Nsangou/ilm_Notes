@@ -2,9 +2,13 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import A4
 import streamlit as st
-from db import add_note, get_notes,conn,can_add_note,create_user,get_user_plan,upgrade_plan
+from db import (add_note, get_notes, conn, can_add_note, create_user, get_user_plan, 
+                upgrade_plan, downgrade_plan, get_all_users, user_exists, delete_note, 
+                update_note, add_val, add_custom_category, get_custom_categories,
+                rename_category, delete_category)
 import pandas as pd
 import altair as alt
+from datetime import datetime, timedelta
 
 def export_note_to_pdf(note):
     styles = getSampleStyleSheet()
@@ -37,6 +41,63 @@ def page_accueil():
     Ilm Notes est un outil simple destiné aux étudiants en sciences islamiques.
     Il vous aide à structurer vos notes, réviser efficacement et partager la science avec adab.
     """)
+    
+    st.divider()
+    st.header("🎯 Choisissez votre plan")
+    
+    # Afficher les deux plans côte à côte dans des containers
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        with st.container(border=True):
+            st.markdown("### 📗 Plan GRATUIT")
+            st.markdown("""
+            ✅ Ajouter jusqu'à **10 notes**
+            
+            ✅ Organiser par catégories
+            
+            ✅ Rechercher et filtrer
+            
+            ✅ Réviser vos notes
+            
+            ✅ Exporter en PDF
+            
+            ✅ Partager via WhatsApp
+            """)
+            if st.button("▶️ Commencer GRATUIT", key="btn_free", use_container_width=True):
+                st.session_state.next_page = "Ajouter une note"
+                st.info("Cliquez sur 'Ajouter une note' dans le menu")
+    
+    with col2:
+        with st.container(border=True):
+            st.markdown("### ⭐ Plan PRO")
+            st.markdown("""
+            ✅ Notes **ILLIMITÉES**
+            
+            ✅ Ajouter des catégories
+            
+            ✅ Suivi de la progression
+            
+            ✅ Réviser vos notes
+            
+            ✅ Exporter en PDF
+            
+            ✅ Partager via WhatsApp
+            
+            """)
+            if st.button("💎 Passer au PRO", key="btn_pro", use_container_width=True):
+                st.warning("Contactez l'administrateur pour l'abonnement PRO")
+                st.info("""
+                📱 Whatsapp: https://wa.me/237698491583
+                
+                Obtenez l'accès illimité et débloquez toutes les fonctionnalités premium!
+                """)
+    st.markdown("✨ **Bien plus à venir In schaa Allah...**")
+    st.markdown("**Restez à l'écoute pour les futures mises à jour et fonctionnalités!**")
+    st.divider()
+    with st.container(border=True):
+        st.info("💡 Commencez gratuitement et passez au PRO quand vous êtes prêt!")
+
 
 # -----------------------------
 # Ajouter une note
@@ -45,15 +106,78 @@ def page_ajouter_note(username):
     st.header("➕ Ajouter une nouvelle note")
     st.divider()
     c = conn.cursor()
-    if get_user_plan(username) == 'free':
+    
+    user_plan = get_user_plan(username)
+    
+    if user_plan == 'free':
         c.execute("SELECT COUNT(*) FROM notes WHERE created_by=?", (username,))
         count = c.fetchone()[0]
         st.info(f"Plan gratuit : {count}/10 notes utilisées")
+    
+    # Catégories par défaut
+    default_categories = ["Aqida", "Fiqh", "Hadith"]
+    
+    # Si premium, ajouter les catégories personnalisées et gérer les catégories
+    if user_plan == 'pro':
+        custom_cats = get_custom_categories(username)
+        all_categories = default_categories + custom_cats
+        
+        # Section de gestion des catégories pour PRO
+        with st.expander("🏷️ Gérer mes catégories"):
+            st.subheader("Catégories personnalisées (max 4)")
+            st.caption(f"Vous avez {len(custom_cats)}/4 catégories personnalisées")
+            
+            # Afficher les catégories personnalisées
+            if custom_cats:
+                st.markdown("**Vos catégories:**")
+                for idx, cat in enumerate(all_categories):
+                    col1, col2, col3 = st.columns([2, 1, 1])
+                    with col1:
+                        st.write(f"• {cat}")
+                    with col2:
+                        if st.button("✏️", key=f"rename_{cat}", help="Renommer"):
+                            st.session_state.rename_cat = cat
+                    with col3:
+                        if st.button("🗑️", key=f"del_{cat}", help="Supprimer"):
+                            delete_category(username, cat)
+                            st.success(f"Catégorie '{cat}' supprimée")
+                            st.rerun()
+                    st.divider()
+                # Formulaire de renommage si nécessaire
+                if st.session_state.get('rename_cat'):
+                    st.divider()
+                    old_name = st.session_state.rename_cat
+                    new_name = st.text_input(f"Nouveau nom pour '{old_name}'")
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        if st.button("✅ Confirmer"):
+                            if new_name and new_name.strip() and new_name != old_name:
+                                rename_category(username, old_name, new_name)
+                                st.success(f"Catégorie renommée en '{new_name}'")
+                                del st.session_state.rename_cat
+                                st.rerun()
+                    with col2:
+                        if st.button("❌ Annuler"):
+                            del st.session_state.rename_cat
+                            st.rerun()
+            else:
+                st.info("Aucune catégorie personnalisée pour le moment")
+            new_category = st.text_input("➕ Ajouter une nouvelle catégorie (optionnel, max 4)")
+            if st.button("Ajouter"):
+                # Ajouter la nouvelle catégorie si fournie et premium
+                if new_category and new_category.strip():
+                    result = add_custom_category(username, new_category.strip())
+                if not result:
+                    st.error("Limite de catégories atteinte (max 4 personnalisées)")  
+                
+        
+    else:
+        all_categories = default_categories
 
     with st.form("add_note_form", clear_on_submit=True):
         title = st.text_input("Titre de la note")
         content = st.text_area("Contenu")
-        category = st.selectbox("Catégorie", ["Aqida", "Fiqh", "Tafsir", "Hadith", "Usul", "Akhlaq"])
+        category = st.selectbox("Catégorie", all_categories)
         subtheme = st.text_input("Sous-thème (optionnel)")
         reference = st.text_input("Référence (livre, savant, cours)")
         submitted = st.form_submit_button("Enregistrer")
@@ -64,12 +188,13 @@ def page_ajouter_note(username):
                     st.success("Note enregistrée avec succès")
                 else:
                     st.warning("Limite atteinte. Passez au plan PRO pour ajouter des notes illimitées.")
-                if st.button("💳 Passer au PRO"):
-                    st.info("Redirection vers le paiement... contactez l'administrateur pour plus de détails.\n\n Whatsapp: https://wa.me/237698491583")
-                    # après paiement réussi :
-                    # upgrade_plan(username)
             else:
                 st.error("Le titre et le contenu sont obligatoires")
+    
+    # Bouton Passer au PRO en dehors du formulaire
+    if can_add_note(username) == False:
+        if st.button("💳 Passer au PRO"):
+            st.info(f"Redirection vers l'abonnement... contactez l'administrateur pour plus de détails.\n\n Whatsapp: https://wa.me/237698491583")
             
 # -----------------------------
 #Organisation & Recherche
@@ -96,7 +221,7 @@ def page_organisation_recherche():
             with st.expander(note[1]):
                 st.markdown(note[2])
                 st.caption(f"📖 {note[5]}")
-                col_a, col_b = st.columns(2)
+                col_a, col_b, col_c = st.columns(3)
                 with col_a:
                     pdf_file = export_note_to_pdf(note)
                     with open(pdf_file, "rb") as f:
@@ -104,8 +229,37 @@ def page_organisation_recherche():
                 with col_b:
                     if st.button("📋 Copier" , key=f"copy_{note[0]}"):
                         st.code(format_for_whatsapp(note))
-                        st.success("Contenu prêt à être collé dans WhatsApp")           
-                (format_for_whatsapp(note))
+                        st.success("Contenu prêt à être collé dans WhatsApp")
+                with col_c:
+                    if st.button("✏️ Modifier", key=f"edit_{note[0]}"):
+                        st.session_state.edit_note_id = note[0]
+                    if st.button("🗑️ Supprimer", key=f"delete_{note[0]}"):
+                        delete_note(note[0])
+                        st.success("Note supprimée")
+                        st.rerun()
+            
+            # Afficher le formulaire de modification si cette note est sélectionnée
+            if st.session_state.get('edit_note_id') == note[0]:
+                st.divider()
+                st.subheader("Modifier la note")
+                with st.form(f"edit_form_{note[0]}"):
+                    new_title = st.text_input("Titre", value=note[2])
+                    new_content = st.text_area("Contenu", value=note[3])
+                    new_category = st.selectbox("Catégorie", ["Aqida", "Fiqh", "Tafsir", "Hadith", "Usul", "Akhlaq"], index=0)
+                    new_subtheme = st.text_input("Sous-thème", value=note[5] if note[5] else "")
+                    new_reference = st.text_input("Référence", value=note[6] if note[6] else "")
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        if st.form_submit_button("💾 Sauvegarder"):
+                            update_note(note[0], new_title, new_content, new_category, new_subtheme, new_reference)
+                            st.success("Note mise à jour")
+                            del st.session_state.edit_note_id
+                            st.rerun()
+                    with col2:
+                        if st.form_submit_button("❌ Annuler"):
+                            del st.session_state.edit_note_id
+                            st.rerun()
 
     st.divider()
     col1, col2 = st.columns(2)
@@ -150,6 +304,33 @@ def page_revision():
 # -----------------------------
 def page_progression_notes():
     st.header("📊 Progression par catégorie (ajout de notes)")
+    st.divider()
+    
+    # Vérifier le plan et la date pour les utilisateurs gratuits
+    if 'username' in st.session_state:
+        username = st.session_state.username
+        user_plan = get_user_plan(username)
+        
+        if user_plan == 'free':
+            # Vérifier la date de création du premier compte (date du plus ancienne note)
+            cursor = conn.cursor()
+            cursor.execute("SELECT created_at FROM notes WHERE created_by=? ORDER BY created_at ASC LIMIT 1", (username,))
+            result = cursor.fetchone()
+            
+            if result:
+                first_note_date = datetime.fromisoformat(result[0])
+                week_ago = datetime.now() - timedelta(days=7)
+                
+                if first_note_date < week_ago:
+                    st.warning("⏰ Votre période gratuite d'accès à la progression a expiré (7 jours)")
+                    st.info("Passez au plan PRO pour continuer à suivre votre progression")
+                    if st.button("💎 Passer au PRO"):
+                        st.warning("Contactez l'administrateur pour l'abonnement PRO")
+                        st.info("📱 Whatsapp: https://wa.me/237698491583")
+                    return
+            else:
+                st.info("Aucune note créée. Commencez à ajouter des notes pour voir votre progression!")
+                return
 
     # Récupérer le nombre de notes par catégorie
     cursor = conn.cursor()
@@ -174,4 +355,119 @@ def page_progression_notes():
         height=400
     )
 
-    st.altair_chart(chart, use_container_width=True)
+    st.altair_chart(chart, width='stretch')
+
+
+# -----------------------------
+# Admin Panel
+# -----------------------------
+def page_admin():
+    st.header("🔐 Panneau Administrateur")
+    st.divider()
+    
+    # Admin authentication with password
+    admin_password = st.text_input("Mot de passe admin", type="password")
+    
+    if admin_password != "Aicha-2025":  # Change this to a secure password
+        if admin_password:
+            st.error("Mot de passe incorrect")
+        return
+    
+    st.success("✅ Connecté en tant qu'administrateur")
+    st.divider()
+    
+    # Tab for different admin actions
+    admin_tab = st.selectbox("Sélectionnez une action", ["Gérer les plans utilisateurs", "Statistiques"])
+    
+    if admin_tab == "Gérer les plans utilisateurs":
+        st.subheader("📋 Gestion des Plans Utilisateurs")
+        
+        all_users = get_all_users()
+        
+        if not all_users:
+            st.info("Aucun utilisateur enregistré")
+            return
+        
+        # Create a dataframe for better display
+        user_df = pd.DataFrame(all_users, columns=["Username", "Plan"])
+        
+        st.dataframe(user_df, width='stretch')
+        
+        st.divider()
+        st.subheader("🔄 Modifier le plan d'un utilisateur")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            target_user = st.selectbox(
+                "Sélectionnez un utilisateur",
+                [user[0] for user in all_users]
+            )
+        
+        with col2:
+            new_plan = st.selectbox(
+                "Nouveau plan",
+                ["free", "pro"]
+            )
+        
+        with col3:
+            add_cat = st.selectbox(
+                "New feature",
+                ["categorie",]
+                )
+            
+        if st.button("✅ Appliquer le changement"):
+            if add_cat == "categorie":
+                add_val(3)
+                st.success(f"✅ {target_user} est passé a 10 categories")
+            if new_plan == "pro":
+                upgrade_plan(target_user)
+                st.success(f"✅ {target_user} est passé au plan PRO")
+            else:
+                downgrade_plan(target_user)
+                st.success(f"✅ {target_user} est revenu au plan GRATUIT")
+            st.rerun()
+    
+    elif admin_tab == "Statistiques":
+        st.subheader("📊 Statistiques Globales")
+        
+        cursor = conn.cursor()
+        
+        # Nombre total d'utilisateurs
+        cursor.execute("SELECT COUNT(*) FROM users")
+        total_users = cursor.fetchone()[0]
+        
+        # Nombre d'utilisateurs PRO
+        cursor.execute("SELECT COUNT(*) FROM users WHERE plan='pro'")
+        pro_users = cursor.fetchone()[0]
+        
+        # Nombre total de notes
+        cursor.execute("SELECT COUNT(*) FROM notes")
+        total_notes = cursor.fetchone()[0]
+        
+        # Nombre de notes par utilisateur
+        cursor.execute("SELECT created_by, COUNT(*) as count FROM notes GROUP BY created_by ORDER BY count DESC")
+        notes_per_user = cursor.fetchall()
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Utilisateurs totaux", total_users)
+        
+        with col2:
+            st.metric("Utilisateurs PRO", pro_users)
+        
+        with col3:
+            st.metric("Utilisateurs GRATUIT", total_users - pro_users)
+        
+        with col4:
+            st.metric("Notes totales", total_notes)
+        
+        st.divider()
+        
+        st.subheader("📝 Notes par utilisateur")
+        if notes_per_user:
+            notes_df = pd.DataFrame(notes_per_user, columns=["Utilisateur", "Nombre de notes"])
+            st.dataframe(notes_df, width='stretch')
+        else:
+            st.info("Aucune note enregistrée")

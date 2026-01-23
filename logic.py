@@ -218,9 +218,9 @@ def page_organisation_recherche():
     st.divider()
     st.subheader(f"Résultats de la recherche ({len(notes)} notes trouvées)")
     for note in notes:
-            with st.expander(note[1]):
-                st.markdown(note[2])
-                st.caption(f"📖 {note[5]}")
+            with st.expander(note[2]):
+                st.markdown(note[3])
+                st.caption(f"📖 {note[6]}")
                 col_a, col_b, col_c = st.columns(3)
                 with col_a:
                     pdf_file = export_note_to_pdf(note)

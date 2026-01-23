@@ -12,7 +12,8 @@ from logic import (
     page_organisation_recherche,
     page_revision,
     page_progression_notes,
-    page_admin
+    page_admin,
+    page_demo
 )
 
 # -----------------------------
@@ -26,7 +27,8 @@ st.set_page_config(
 
 # Initialiser la page par défaut
 if 'current_page' not in st.session_state:
-    st.session_state.current_page = "Accueil"
+    st.session_state.current_page = "🏡 Accueil"
+
 
 # -----------------------------
 # Sidebar – Navigation
@@ -44,14 +46,14 @@ if st.session_state.get('username'):
 st.sidebar.divider()
 page = st.sidebar.radio(
     "Navigation",
-    ["Accueil", "Ajouter une note", "Organisation", "Révision", "Progression", "Admin"]
+    ["🏡 Accueil", "📝 Ajouter une note", "🗂️ Organisation", "🔁 Révision", "📊 Progression","📘 Demo", "🔐 Admin"]
 )
 
 # Afficher la page d'accueil par défaut
-if page == "Accueil":
+if page == "🏡 Accueil":
     page_accueil()
 
-elif page == "Ajouter une note":
+elif page == "📝 Ajouter une note":
     # Demander le nom d'utilisateur si pas connecté
     if 'username' not in st.session_state:
         st.header("➕ Ajouter une nouvelle note")
@@ -69,7 +71,7 @@ elif page == "Ajouter une note":
     else:
         page_ajouter_note(st.session_state.username)
 
-elif page == "Organisation":
+elif page == "🗂️ Organisation":
     if 'username' not in st.session_state:
         st.header("🗂️ Organisation & Recherche")
         st.divider()
@@ -82,7 +84,7 @@ elif page == "Organisation":
     else:
         page_organisation_recherche()
 
-elif page == "Révision":
+elif page == "🔁 Révision":
     if 'username' not in st.session_state:
         st.header("🔁 Révision guidée")
         st.divider()
@@ -95,7 +97,7 @@ elif page == "Révision":
     else:
         page_revision()
 
-elif page == "Progression":
+elif page == "📊 Progression":
     if 'username' not in st.session_state:
         st.header("📊 Progression par catégorie")
         st.divider()
@@ -107,7 +109,8 @@ elif page == "Progression":
             st.rerun()
     else:
         page_progression_notes()
-
-elif page == "Admin":
+elif page == "📘 Demo":
+    page_demo()
+elif page == "🔐 Admin":
     page_admin()
     

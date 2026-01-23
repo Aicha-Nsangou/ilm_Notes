@@ -471,3 +471,76 @@ def page_admin():
             st.dataframe(notes_df, width='stretch')
         else:
             st.info("Aucune note enregistrée")
+            
+# -----------------------------
+# Démo
+# -----------------------------
+def page_demo():
+    st.header("🎬 Démo d'Ilm Notes")
+    st.divider()
+    st.markdown("""
+    Voici une presentation démontrant les principales fonctionnalités d'Ilm Notes:
+    
+    - Ajouter et organiser des notes
+    - Réviser efficacement
+    - Suivre la progression
+    - Exporter et partager des notes
+    
+    *Vidéo à venir In schaa Allah...*
+    """)
+    
+    st.divider()
+    st.title("📘 Comment utiliser Ilm Notes")
+
+    st.markdown("""
+    **Ilm Notes** est un outil simple pour aider les étudiants en sciences islamiques
+    à organiser, réviser et partager leurs notes بسهولة.
+    """)
+
+    st.divider()
+
+    st.subheader("1️⃣ Ajouter une note")
+    st.markdown("""
+    - Choisis une **catégorie** (Fiqh, Aqida, Tafsir, Hadith, etc.)
+    - Écris ta note
+    - Ajoute une **référence** si nécessaire
+    - Clique sur **Ajouter**
+    """)
+
+    st.subheader("2️⃣ Organiser ses notes")
+    st.markdown("""
+    - Utilise le **filtre par catégorie**
+    - Retrouve facilement ce que tu as déjà étudié
+    """)
+
+    st.subheader("3️⃣ Suivre ta progression")
+    st.markdown("""
+    - Le graphique montre **sur quelles catégories tu travailles le plus**
+    - Plus tu ajoutes de notes, plus ta courbe évolue
+    """)
+
+    st.subheader("4️⃣ Partager une note")
+    st.markdown("""
+    - Clique sur **Copier pour WhatsApp**
+    - La note est formatée proprement
+    - Tu peux la coller directement dans un groupe ou une chaîne
+    """)
+
+    st.subheader("5️⃣ Version gratuite et Pro")
+    st.markdown("""
+    **Gratuit**
+    - Jusqu’à 10 notes
+
+    **Pro**
+    - Notes illimitées
+    - Accès complet
+    """)
+
+    st.divider()
+
+    st.markdown("""
+    > *Qu’Allah mette la baraka dans ce savoir  
+    et le rende bénéfique pour celui qui l’apprend et le partage.*
+    """)
+
+

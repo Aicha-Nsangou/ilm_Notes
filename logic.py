@@ -2,8 +2,8 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import A4
 import streamlit as st
-from db import (add_note, get_notes, conn, can_add_note, create_user, get_user_plan, 
-                upgrade_plan, downgrade_plan, get_all_users, user_exists, delete_note, 
+from db import (add_note, get_notes, conn, can_add_note, get_user_plan, 
+                upgrade_plan, downgrade_plan, get_all_users, delete_note, 
                 update_note, add_val, add_custom_category, get_custom_categories,
                 rename_category, delete_category)
 import pandas as pd

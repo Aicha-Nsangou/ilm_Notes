@@ -12,8 +12,8 @@ from logic import (
     page_organisation_recherche,
     page_revision,
     page_progression_notes,
-    page_admin,
-    page_demo
+    page_demo,
+    page_admin
 )
 
 # -----------------------------

@@ -16,13 +16,13 @@ def export_note_to_pdf(note):
     doc = SimpleDocTemplate(file_name, pagesize=A4)
     story = []
 
-    story.append(Paragraph(f"<b> {note[1]}</b>", styles['Title']))
+    story.append(Paragraph(f"<b> {note[2]}</b>", styles['Title']))
     story.append(Spacer(1, 12))
-    story.append(Paragraph(note[2].replace('\n', '<br/>'), styles['BodyText']))
+    story.append(Paragraph(note[3].replace('\n', '<br/>'), styles['BodyText']))
     story.append(Spacer(1, 12))
-    story.append(Paragraph(f" Référence : {note[5]}", styles['Italic']))
+    story.append(Paragraph(f" Référence : {note[6]}", styles['Italic']))
     story.append(Spacer(1, 12))
-    story.append(Paragraph(f"Généré par Ilm Notes : {note[6]}", styles['Normal']))
+    story.append(Paragraph(f"Généré par Ilm Notes : {note[7]}", styles['Normal']))
 
     doc.build(story)
     return file_name

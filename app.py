@@ -13,8 +13,9 @@ from logic import (
     page_revision,
     page_progression_notes,
     page_demo,
-    page_admin,
-    custom_footer
+    custom_footer,
+    page_admin
+    
 )
 
 # -----------------------------

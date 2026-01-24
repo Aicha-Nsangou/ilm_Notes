@@ -14,6 +14,7 @@ from logic import (
     page_progression_notes,
     page_demo,
     custom_footer,
+    custom_header,
     page_admin
     
 )
@@ -37,6 +38,22 @@ header {visibility: hidden;}
 """
 
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+# Custom header
+custom_header()
+
+# Add padding to avoid overlap with fixed header
+st.markdown(
+    """
+    <style>
+    .main .block-container {
+        padding-top: 60px;
+        padding-bottom: 60px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # Initialiser la page par défaut
 if 'current_page' not in st.session_state:

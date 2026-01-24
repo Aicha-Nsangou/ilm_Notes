@@ -211,6 +211,7 @@ def page_organisation_recherche():
         st.session_state.page_num = 1
     offset = (st.session_state.page_num - 1) * notes_per_page
     notes = get_notes({
+        "username": st.session_state.username,
         "category": category if category else None,
         "subtheme": subtheme,
         "reference": reference
@@ -277,7 +278,7 @@ def page_organisation_recherche():
 def page_revision():
     st.header("🔁 Révision guidée")
     st.divider()
-    notes = get_notes()
+    notes = get_notes({"username": st.session_state.username})
 
     if not notes:
         st.info("Aucune note disponible pour la révision")
@@ -334,7 +335,7 @@ def page_progression_notes():
 
     # Récupérer le nombre de notes par catégorie
     cursor = conn.cursor()
-    cursor.execute("SELECT category, COUNT(*) FROM notes GROUP BY category")
+    cursor.execute("SELECT category, COUNT(*) FROM notes WHERE created_by=? GROUP BY category", (username,))
     data = cursor.fetchall()
 
     if not data:
@@ -566,6 +567,32 @@ def custom_footer():
             <em>
             اللهم علمنا ما ينفعنا وانفعنا بما علمتنا وزدنا علما
             </em>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+def custom_header():
+    st.markdown(
+        """
+        <style>
+        .ilm-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f0f2f6;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 18px;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            z-index: 1000;
+        }
+        </style>
+
+        <div class="ilm-header">
+            <strong>📘 Ilm Notes - Organiser, préserver et réviser la science</strong>
         </div>
         """,
         unsafe_allow_html=True

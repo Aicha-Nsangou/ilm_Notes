@@ -28,26 +28,14 @@ st.set_page_config(
     layout="centered"
 )
 
-#hide header en footer streamlit
-hide_streamlit_style = """
-<style>
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-header {visibility: hidden;}
-</style>
-"""
-
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
-
 # Custom header
 custom_header()
 
-# Add padding to avoid overlap with fixed header
+# Add padding to avoid overlap with fixed footer
 st.markdown(
     """
     <style>
     .main .block-container {
-        padding-top: 60px;
         padding-bottom: 60px;
     }
     </style>

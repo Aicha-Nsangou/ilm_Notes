@@ -575,24 +575,8 @@ def custom_footer():
 def custom_header():
     st.markdown(
         """
-        <style>
-        .ilm-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: #f0f2f6;
-            text-align: center;
-            padding: 10px 0;
-            font-size: 18px;
-            color: #333;
-            border-bottom: 1px solid #ddd;
-            z-index: 1000;
-        }
-        </style>
-
-        <div class="ilm-header">
-            <strong>📘 Ilm Notes - Organiser, préserver et réviser la science</strong>
+        <div style="text-align: center; padding: 10px 0; border-bottom: 1px solid #ddd; margin-bottom: 20px;">
+            <strong> بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</strong>
         </div>
         """,
         unsafe_allow_html=True

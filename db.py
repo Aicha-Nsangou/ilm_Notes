@@ -165,6 +165,9 @@ def get_notes(filters=None,limit=10, offset=0):
     params = []
 
     if filters:
+        if filters.get("username"):
+            query += " AND created_by=?"
+            params.append(filters["username"])
         if filters.get("category"):
             query += " AND category=?"
             params.append(filters["category"])

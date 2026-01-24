@@ -542,5 +542,34 @@ def page_demo():
     > *Qu’Allah mette la baraka dans ce savoir  
     et le rende bénéfique pour celui qui l’apprend et le partage.*
     """)
+    
+def custom_footer():
+    st.markdown(
+        """
+        <style>
+        .ilm-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #fafafa;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 13px;
+            color: #444;
+            border-top: 1px solid #ddd;
+        }
+        </style>
+
+        <div class="ilm-footer">
+            <strong>Ilm Notes</strong> 🌙<br>
+            <em>
+            اللهم علمنا ما ينفعنا وانفعنا بما علمتنا وزدنا علما
+            </em>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 
 

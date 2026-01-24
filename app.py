@@ -13,7 +13,8 @@ from logic import (
     page_revision,
     page_progression_notes,
     page_demo,
-    page_admin
+    page_admin,
+    custom_footer
 )
 
 # -----------------------------
@@ -24,6 +25,17 @@ st.set_page_config(
     page_icon="📘",
     layout="centered"
 )
+
+#hide header en footer streamlit
+hide_streamlit_style = """
+<style>
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+</style>
+"""
+
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 # Initialiser la page par défaut
 if 'current_page' not in st.session_state:
@@ -116,3 +128,9 @@ elif page == "📘 Demo":
 elif page == "🔐 Admin":
     page_admin()
     
+    
+# -----------------------------
+# Pied de page
+# -----------------------------
+st.divider()
+custom_footer()

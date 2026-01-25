@@ -5,7 +5,7 @@
 .*pdf
 logic.py
 db.py
-
+supabase_client.py
 # =========================
 # Python
 # =========================

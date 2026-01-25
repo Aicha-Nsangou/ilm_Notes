@@ -110,10 +110,16 @@ def page_accueil():
             if st.button("💎 Passer au PRO", key="btn_pro", use_container_width=True):
                 st.warning("Contactez l'administrateur pour l'abonnement PRO")
                 st.info("""
-                📱 Whatsapp: https://wa.me/237698491583
-                
-                Obtenez l'accès illimité et débloquez toutes les fonctionnalités premium!
+                    💳 Paiement Orange Money
+
+                    📱 Numéro : 698 491 583 
+                    💰 Montant : 2 000 FCFA / mois  
+                    📝 Référence : Aicha Nsangou Mama Awouolou
+
+                    📩 Envoyez le screenshot sur WhatsApp :
+                    👉 https://wa.me/237698491583
                 """)
+
     st.markdown("✨ **Bien plus à venir In schaa Allah...**")
     st.markdown("**Restez à l'écoute pour les futures mises à jour et fonctionnalités!**")
     st.divider()
@@ -217,8 +223,17 @@ def page_ajouter_note(user_id):
             # Bouton Passer au PRO en dehors du formulaire
             if can_add_note(user_id) == False:
                 if st.button("💳 Passer au PRO"):
-                    st.info(f"Redirection vers l'abonnement... contactez l'administrateur pour plus de détails.\n\n Whatsapp: https://wa.me/237698491583")
-            
+                    st.info("""
+                    💳 Paiement Orange Money
+
+                    📱 Numéro : 698 491 583 
+                    💰 Montant : 2 000 FCFA / mois  
+                    📝 Référence : Aicha Nsangou Mama Awouolou
+
+                    📩 Envoyez le screenshot sur WhatsApp :
+                    👉 https://wa.me/237698491583
+                """)
+
 
 # --- Page: Organisation & Recherche ---
 def page_organisation_recherche(user_id):

@@ -5,8 +5,8 @@
 # Intention : خدمة العلم – au service de la science
 
 import streamlit as st
-from db import create_user, user_exists
-from logic import (
+from auth import signup, login, logout, is_logged_in
+from supalogic import (
     page_accueil,
     page_ajouter_note,
     page_organisation_recherche,
@@ -18,7 +18,7 @@ from logic import (
     page_admin
     
 )
-
+from supadb import is_admin
 # -----------------------------
 # Configuration générale
 # -----------------------------
@@ -27,6 +27,7 @@ st.set_page_config(
     page_icon="📘",
     layout="centered"
 )
+
 
 # Custom header
 custom_header()
@@ -43,28 +44,36 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Initialiser la page par défaut
-if 'current_page' not in st.session_state:
-    st.session_state.current_page = "🏡 Accueil"
-
-
 # -----------------------------
 # Sidebar – Navigation
 # -----------------------------
 st.sidebar.title("📚 Ilm Notes")
 
-# Afficher le nom d'utilisateur si connecté
-if st.session_state.get('username'):
-    st.sidebar.markdown(f"**Marhaban {st.session_state.username}**")
-    # Bouton de déconnexion
-    if st.sidebar.button("🚪 Déconnexion"):
-        del st.session_state.username
-        st.rerun()
+with st.sidebar:
+    if not is_logged_in():
+        with st.expander("🔐 Connexion"):
+            email = st.text_input("Email")
+            password = st.text_input("Mot de passe", type="password")
+            if st.button("Se connecter"):
+                login(email, password)
+                
+        with st.expander("👤 Créer un compte"):
+            full_name = st.text_input("Nom complet")
+            email2 = st.text_input("Email pour inscription")
+            password2 = st.text_input("Mot de passe", type="password", key="signup")
+            if st.button("S'inscrire"):
+                signup(email2, password2, full_name)
+    else:
+        st.subheader(f"Marhaban !")
+        st.button("Se déconnecter", on_click=logout)
+# Initialiser la page par défaut
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = "🏡 Accueil"
 
 st.sidebar.divider()
 page = st.sidebar.radio(
     "Navigation",
-    ["🏡 Accueil", "📝 Ajouter une note", "🗂️ Organisation", "🔁 Révision", "📊 Progression","📘 Demo", "🔐 Admin"]
+    ["🏡 Accueil", "📝 Ajouter une note", "🗂️ Organisation", "🔁 Révision", "📊 Progression","📘 Demo", "🛡️ Admin"]
 )
 
 # Afficher la page d'accueil par défaut
@@ -73,66 +82,39 @@ if page == "🏡 Accueil":
 
 elif page == "📝 Ajouter une note":
     # Demander le nom d'utilisateur si pas connecté
-    if 'username' not in st.session_state:
-        st.header("➕ Ajouter une nouvelle note")
-        st.divider()
-        
-        name_input = st.text_input("Entrez votre nom d'utilisateur pour continuer")
-        if name_input:
-            if not user_exists(name_input):
-                create_user(name_input)
-                st.success("Compte créé avec succès!")
-            else:
-                st.info("Bienvenue!")
-            st.session_state.username = name_input
-            st.rerun()
+    if is_logged_in():
+        page_ajouter_note(st.session_state['user'].id)
     else:
-        page_ajouter_note(st.session_state.username)
+        st.info("Connectez-vous pour accéder à vos notes.")
 
 elif page == "🗂️ Organisation":
-    if 'username' not in st.session_state:
-        st.header("🗂️ Organisation & Recherche")
-        st.divider()
-        name_input = st.text_input("Entrez votre nom d'utilisateur pour continuer")
-        if name_input:
-            if not user_exists(name_input):
-                create_user(name_input)
-            st.session_state.username = name_input
-            st.rerun()
+    if is_logged_in():
+        page_organisation_recherche(st.session_state['user'].id)
     else:
-        page_organisation_recherche()
+        st.info("Connectez-vous pour accéder à vos notes.")
 
 elif page == "🔁 Révision":
-    if 'username' not in st.session_state:
-        st.header("🔁 Révision guidée")
-        st.divider()
-        name_input = st.text_input("Entrez votre nom d'utilisateur pour continuer")
-        if name_input:
-            if not user_exists(name_input):
-                create_user(name_input)
-            st.session_state.username = name_input
-            st.rerun()
+    if is_logged_in():
+         page_revision(st.session_state['user'].id)
     else:
-        page_revision()
+        st.info("Connectez-vous pour accéder à vos notes.")
 
 elif page == "📊 Progression":
-    if 'username' not in st.session_state:
-        st.header("📊 Progression par catégorie")
-        st.divider()
-        name_input = st.text_input("Entrez votre nom d'utilisateur pour continuer")
-        if name_input:
-            if not user_exists(name_input):
-                create_user(name_input)
-            st.session_state.username = name_input
-            st.rerun()
+    if is_logged_in():
+         page_progression_notes(st.session_state['user'].id)
     else:
-        page_progression_notes()
-
+        st.info("Connectez-vous pour accéder à vos notes.")
 elif page == "📘 Demo":
     page_demo()
     
-elif page == "🔐 Admin":
-    page_admin()
+elif page == "🛡️ Admin":
+    if is_logged_in():
+        if not is_admin(st.session_state['user'].id):
+            st.error("Accès interdit")
+            st.stop()
+        page_admin(st.session_state['user'].id)
+    else:
+        st.info("Connectez-vous pour accéder à vos notes.")
     
     
 # -----------------------------

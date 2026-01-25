@@ -1,0 +1,80 @@
+# SQLite (ancien système)
+*.db
+*.sqlite
+*.sqlite3
+.*pdf
+logic.py
+db.py
+
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+.env
+.venv
+venv/
+ENV/
+
+# =========================
+# Streamlit
+# =========================
+.streamlit/secrets.toml
+.streamlit/config.toml
+
+# Cache Streamlit
+.streamlit/cache/
+.streamlit/logs/
+
+# =========================
+# Supabase / Secrets
+# =========================
+.env
+.env.*
+*.key
+*.pem
+
+# =========================
+# SQLite (ancien système)
+# =========================
+*.db
+*.sqlite
+*.sqlite3
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# Data / Exports
+# =========================
+*.csv
+*.xlsx
+*.pdf
+
+# =========================
+# Temp files
+# =========================
+tmp/
+temp/

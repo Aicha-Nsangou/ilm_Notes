@@ -68,6 +68,7 @@ def page_accueil():
         """,
         unsafe_allow_html=True
     )
+    st.toast("👉 **Utilise** le menu haut à gauche. **>>**", icon="🕌")
 
     st.markdown("""
     ### 📚 Qu’est-ce que Ilm Notes ?
@@ -279,6 +280,7 @@ def page_ajouter_note(user_id):
 
             if ok:
                 st.success("Note enregistrée")
+                st.toast("👉 Vas sur **🗂️ Organisation** pour voir ta note. **>>**", icon="🕌")
             else:
                 st.warning("Limite atteinte. Passez au plan PRO.")
              

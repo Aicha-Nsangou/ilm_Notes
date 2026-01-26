@@ -8,10 +8,9 @@ def get_user_plan(user_id):
         .table("users")
         .select("plan")
         .eq("id", user_id)
-        .single()
         .execute()
     )
-    return res.data["plan"] if res.data else "free"
+    return res.data[0]["plan"] if res.data else "free"
 
 # --- Upgrade / Downgrade Plans ---
 def upgrade_plan(user_id):

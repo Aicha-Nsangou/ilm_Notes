@@ -1,76 +1,120 @@
 import streamlit as st
 from supabase_client import supabase
+from datetime import datetime
+
+def signup(email: str, password: str, full_name: str) -> dict:
+    """
+    Crée un compte Supabase (auth.users)
+    L'utilisateur doit confirmer son email.
+    """
+    try:
+        res = supabase.auth.sign_up({
+            "email": email,
+            "password": password,
+            "options": {
+                "data": {
+                    "full_name": full_name
+                }
+            }
+        })
+
+        if not res.user:
+            return {
+                "ok": False,
+                "message": "Erreur lors de l'inscription"
+            }
+        return {
+            "ok": True,
+            "message": f"📩 {full_name},Un email de confirmation vous a été envoyé"
+        }
+        
+    except Exception as e:
+        return {
+            "ok": False,
+            "message": f"Erreur signup : {e}"
+        }
+
 
 # -------------------------
-# SIGNUP
+# Login
 # -------------------------
-def signup(email, password, full_name):
+def login(email: str, password: str) -> dict:
+    """
+    Connexion utilisateur.
+    Bloque l'accès si email non confirmé.
+    S'assure que le user existe dans public.users.
+    """
+    
     try:
-        # Création utilisateur Supabase Auth
-        user_resp = supabase.auth.sign_up({
+        res = supabase.auth.sign_in_with_password({
             "email": email,
             "password": password
         })
 
-        user = user_resp.user
+        user = res.user
+           
         if not user:
-            st.error("Impossible de créer le compte. Vérifie l'email ou le mot de passe.")
-            return None
+            return {
+                "ok": False,
+                "message": "Identifiants invalides"
+            }
 
-        # Création du profil dans table 'users'
-        supabase.table("users").insert({
-            "id": user.id,
-            "full_name": full_name,
-        }).execute()
+        
+           
+        # ⛔ Email non confirmé
+        if user.email_confirmed_at is None:
+            supabase.auth.sign_out()
+            return {
+                "ok": False,
+                "message": "⚠️ Veuillez confirmer votre email avant de continuer"
+            }
 
-        st.success(f"Compte créé | Marhaban {full_name}")
-        st.session_state['user'] = user
-        st.session_state['full_name'] = full_name
-        return user
+        # ✅ Vérifier / créer user dans public.users
+        profile = supabase.table("users") \
+            .select("id, plan") \
+            .eq("id", user.id) \
+            .execute()
+
+        if not profile.data:
+            supabase.table("users").insert({
+                "id": user.id,
+                "full_name": user.user_metadata.get("full_name", ""),
+                "plan": "free",
+                "created_at": datetime.utcnow().isoformat()
+            }).execute()
+
+            plan = "free"
+        else:
+            plan = profile.data[0]["plan"]
+
+        return {
+            "ok": True,
+            "user": {
+                "id": user.id,
+                "full_name": user.user_metadata.get("full_name", ""),
+                "plan": plan
+            }
+        }
 
     except Exception as e:
-        st.error(f"Erreur signup : {e}")
-        return None
+        return {
+            "ok": False,
+            "message": f"Erreur login : {e}"
+        }
 
 
 # -------------------------
-# LOGIN
-# -------------------------
-def login(email, password):
-    try:
-        user_resp = supabase.auth.sign_in_with_password({
-            "email": email,
-            "password": password
-        })
-
-        user = user_resp.user
-        if not user:
-            st.error("Email ou mot de passe incorrect.")
-            return None
-
-        # Stocker l'utilisateur dans session_state
-        st.session_state['user'] = user
-        st.success(f"Marhaban !")
-        return user
-
-    except Exception as e:
-        st.error(f"Erreur login : {e}")
-        return None
-
-
-# -------------------------
-# LOGOUT
+# Logout
 # -------------------------
 def logout():
     try:
         supabase.auth.sign_out()
-    except Exception:
-        pass  # ignore si déjà déconnecté
-
+    except Exception as e:
+        st.error(f"Erreur de déconnexion : {e}")
+    
     if 'user' in st.session_state:
         del st.session_state['user']
-    st.success("Déconnecté !")
-
+    st.success("Déconnecté avec succès")
 
 # -------------------------
 # UTILITAIRE : vérifier si connecté

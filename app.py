@@ -54,13 +54,18 @@ st.markdown(
 st.sidebar.title("📚 Ilm Notes")
 
 with st.sidebar:
-    if not is_logged_in():
+    if is_logged_in() is False:
         with st.expander("🔐 Connexion"):
             email = st.text_input("Email")
             password = st.text_input("Mot de passe", type="password")
             if st.button("Se connecter"):
                 with st.spinner("Chargement..."):
-                    login(email, password)
+                    res = login(email, password)
+                    if res["ok"]:
+                        st.session_state['user'] = res["user"]
+                        st.success("Connexion réussie")
+                    else:
+                        st.error(res["message"])
                 
         with st.expander("👤 Créer un compte"):
             full_name = st.text_input("Nom complet")
@@ -68,9 +73,13 @@ with st.sidebar:
             password2 = st.text_input("Mot de passe", type="password", key="signup")
             if st.button("S'inscrire"):
                 with st.spinner("Chargement..."):
-                    signup(email2, password2, full_name)
+                    res = signup(email2, password2, full_name)
+                    if res["ok"]:
+                        st.success(res["message"])
+                    else:
+                        st.error(res["message"])
     else:
-        st.subheader(f"Marhaban !")
+        st.subheader(f"Marhaban {st.session_state['user']['full_name']}!")
         st.button("Se déconnecter", on_click=logout)
 # Initialiser la page par défaut
 if "page" not in st.session_state:
@@ -92,25 +101,25 @@ if st.session_state.page == "🏡 Accueil":
 elif st.session_state.page == "📝 Ajouter une note":
     # Demander le nom d'utilisateur si pas connecté
     if is_logged_in():
-        page_ajouter_note(st.session_state['user'].id)
+        page_ajouter_note(st.session_state['user']['id'])
     else:
         st.info("Connectez-vous pour accéder à vos notes.")
 
 elif st.session_state.page == "🗂️ Organisation":
     if is_logged_in():
-        page_organisation_recherche(st.session_state['user'].id)
+        page_organisation_recherche(st.session_state['user']['id'])
     else:
         st.info("Connectez-vous pour accéder à vos notes.")
 
 elif st.session_state.page == "🔁 Révision":
     if is_logged_in():
-         page_revision(st.session_state['user'].id)
+         page_revision(st.session_state['user']['id'])
     else:
         st.info("Connectez-vous pour accéder à vos notes.")
 
 elif st.session_state.page == "📊 Progression":
     if is_logged_in():
-         page_progression_notes(st.session_state['user'].id)
+         page_progression_notes(st.session_state['user']['id'])
     else:
         st.info("Connectez-vous pour accéder à vos notes.")
 elif st.session_state.page == "📘 Demo":
@@ -118,10 +127,10 @@ elif st.session_state.page == "📘 Demo":
 
 elif st.session_state.page == "🛡️ Admin":
     if is_logged_in():
-        if not is_admin(st.session_state['user'].id):
+        if not is_admin(st.session_state['user']['id']):
             st.error("Accès interdit")
             st.stop()
-        page_admin(st.session_state['user'].id)
+        page_admin(st.session_state['user']['id'])
     else:
         st.info("Connectez-vous pour accéder à vos notes.")
     

@@ -55,8 +55,6 @@ def format_for_whatsapp(note: dict):
 # -----------------------------
 # Accueil
 # -----------------------------
-import streamlit as st
-
 def page_accueil():
     st.markdown(
         """
@@ -194,8 +192,11 @@ def page_home():
 def page_ajouter_note(user_id):
     st.header("➕ Ajouter une nouvelle note")
     st.divider()
-
-    plan = get_user_plan(user_id)
+    try :
+        plan = get_user_plan(user_id)
+    except Exception as e:
+        st.error(f"Erreur lors de la récupération du plan utilisateur : {e}")
+        return
 
     if plan == "free":
         count = count_notes(user_id)

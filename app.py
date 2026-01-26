@@ -19,6 +19,8 @@ from supalogic import (
     
 )
 from supadb import is_admin
+
+
 # -----------------------------
 # Configuration générale
 # -----------------------------
@@ -116,9 +118,27 @@ elif page == "🛡️ Admin":
     else:
         st.info("Connectez-vous pour accéder à vos notes.")
     
-    
+st.sidebar.divider()
+st.sidebar.markdown("""
+    <div style="text-align:center; margin-top: 20px;">
+        <a href="https://wa.me/237698491583?text=Assalamu%20alaykum%2C%20j%27utilise%20Ilm%20Notes%20et%20voici%20mon%20avis%20:" 
+            target="_blank"
+            style="
+                display: inline-block;
+                padding: 10px 20px;
+                background-color: #25D366;
+                color: white;
+                border-radius: 8px;
+                text-decoration: none;
+                font-weight: bold;
+       ">
+           🧠 Mon avis 
+        </a>
+    </div>
+""", unsafe_allow_html=True)
+
 # -----------------------------
 # Pied de page
 # -----------------------------
-st.divider()
+
 custom_footer()

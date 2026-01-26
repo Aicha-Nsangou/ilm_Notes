@@ -301,7 +301,6 @@ def page_organisation_recherche(user_id):
                         if st.form_submit_button("💾 Sauvegarder"):
                             update_note(note["id"], new_title, new_content, new_category, new_subtheme, new_reference)
                             st.success("Note mise à jour")
-                            del st.session_state.edit_note_id
                             st.rerun()
                     with col2:
                         if st.form_submit_button("❌ Annuler"):
@@ -590,7 +589,7 @@ def custom_header():
     """
     <style>
         /* Cacher uniquement le lien GitHub */
-        a[href*="github.com"] {
+        a[href="github.com"] {
             display: none !important;
         }
     </style>
@@ -607,5 +606,28 @@ def custom_header():
         unsafe_allow_html=True
     )
 
+def avis():
+    st.sidebar.markdown("""
+        <style>   
+            .avis{
+                display: inline-block;
+                padding: 10px 20px;
+                background-color: #25D366;
+                color: white;
+                border-radius: 8px;
+                text-decoration: none;
+                font-weight: bold;
+                text-align:center;
+                margin-top: 20px;
+                }
+        </style>
 
+
+    <div class="avis">
+        <a href="https://wa.me/237698491583?text=Assalamu%20alaykum%2C%20j%27utilise%20Ilm%20Notes%20et%20voici%20mon%20avis%20:" 
+            target="_blank">
+            💬 Mon avis 
+        </a>
+    </div>
+""", unsafe_allow_html=True)
 

@@ -55,7 +55,69 @@ def format_for_whatsapp(note: dict):
 # -----------------------------
 # Accueil
 # -----------------------------
+import streamlit as st
+
 def page_accueil():
+    st.markdown(
+        """
+        <h2 style="text-align:center;">🕌 Ilm Notes</h2>
+        <p style="text-align:center; font-style:italic;">
+        Un espace simple pour préserver et organiser la science islamique.
+        </p>
+        <hr>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown("""
+    ### 📚 Qu’est-ce que Ilm Notes ?
+
+    **Ilm Notes** est un outil conçu pour les étudiants, enseignants et autodidactes
+    en sciences islamiques.
+
+    Il permet de :
+    - prendre des notes rapidement  
+    - les classer par catégories et thèmes  
+    - retrouver facilement une information  
+    - visualiser sur quoi tu travailles le plus
+    - réviser efficacement
+    - partager la science avec adab
+    
+    """)
+
+    st.markdown("""
+    ### 🎯 Pourquoi Ilm Notes ?
+
+    Parce que la science se perd facilement :
+    - dans les carnets éparpillés  
+    - dans les discussions WhatsApp  
+    - dans les fichiers non organisés  
+
+    **Ilm Notes t’aide à garder ton ‘ilm accessible et structuré.**
+    """)
+    
+    st.markdown("""
+    ###  📚 Dans quel contexte ?
+
+    Ilm Notes s’utilise :
+    - pendant ou après un cours
+    - lors de la lecture d’un livre
+    - pour préparer un rappel ou un enseignement
+    - sur téléphone ou ordinateur
+    
+    **L’objectif est d’avoir un espace calme, rapide et structuré.**
+    """)
+
+    st.markdown("""
+    ### 🤲 Une intention
+
+    Ilm Notes est un projet né avec l’intention de servir la science,
+    ses étudiants et ceux qui la transmettent.
+    """)
+
+    st.info("🌱 Projet en phase de test (MVP) – Vos retours sont les bienvenus.")
+
+def page_home():
     st.title("📘 Ilm Notes")
     st.divider()
     st.markdown("**Organiser, préserver et réviser la science**")

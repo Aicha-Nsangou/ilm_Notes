@@ -1,4 +1,5 @@
 from supabase_client import supabase
+from supabase_admin import get_power
 from datetime import datetime
 
 # --- User Plans ---
@@ -26,6 +27,7 @@ def downgrade_plan(user_id):
     
 # --- Get All Users ---
 def get_all_users_admin():
+    supabase = get_power()
     res = (
         supabase
         .table("users")

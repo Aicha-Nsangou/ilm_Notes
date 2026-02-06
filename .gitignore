@@ -6,6 +6,7 @@
 logic.py
 db.py
 supabase_client.py
+supabase_admin.py
 # =========================
 # Python
 # =========================

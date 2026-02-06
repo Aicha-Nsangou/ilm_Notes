@@ -1,3 +1,5 @@
+import base64
+from streamlit_option_menu import option_menu
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import A4
@@ -5,6 +7,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 from datetime import datetime, timedelta
+from auth import signup, login, logout, is_logged_in
 from supadb import ( 
                 can_add_note,
                 get_user_plan,
@@ -52,140 +55,202 @@ def format_for_whatsapp(note: dict):
         f"📖 Réf : {note.get('reference','—')}\n"
         f"— partagé via Ilm Notes"
     )
+
+# --- Set Background Image ---
+def set_bg_local(image_file):
+    with open(image_file, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode()
+    st.markdown(
+    f"""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    .stApp {{
+        font-family: 'Poppins', sans-serif !important;
+        background-image: url("data:image/png;base64,{encoded}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-position: center;
+        background-color: rgba(255,255,255,0.85);
+        backdrop-filter: blur(6px);
+
+    }}
+    input:focus,
+    textarea:focus,
+    select:focus {{
+    outline: none !important;
+    box-shadow: none !important;
+    border: 1px solid rgba(0,0,0,0.15) !important;
+    }}
+    </style>
+    <div class="overlay"></div>
+    """,
+    unsafe_allow_html=True
+    )
+    
+#navbar
+def navbar_custom():
+    selected = option_menu(
+    menu_title=None,
+    options=["Accueil", "Note", "Organisation", "Révision", "Progression","Demo", "Admin","Se connecter"],
+    icons=["house", "pencil-square", "folder2-open", "arrow-repeat", "bar-chart", "book", "shield-lock"],
+    menu_icon="bookshelf",
+    default_index=0,
+    orientation="vertical",
+    styles={
+        "container": {"margin":"0px","background-color": "#f0f2f6", "border-radius": "5px","width":"100%"},
+        "icon": {"color": "olive", "font-size": "20px"}, 
+        "nav-link": {
+            "font-size": "16px",
+            "text-align": "center",
+            "margin":"0px",
+            "color": "black",
+            "--hover-color": "#eee",
+            "display":"flex",
+            "justify-content":"start",
+            "align-items":"center"
+        },
+        "nav-link-selected": {"border-bottom": "5px solid crimson", "background-color": "#f0f2f6", "border-radius": "1px"},
+    }
+    )
+    return selected
+
 # -----------------------------
 # Accueil
 # -----------------------------
 def page_accueil():
     st.markdown(
         """
-        <h2 style="text-align:center;">🕌 Ilm Notes</h2>
+        <h2 style="text-align:center;"> ILM NOTES</h2>
         <p style="text-align:center; font-style:italic;">
         Un espace simple pour préserver et organiser la science islamique.
         </p>
-        <hr>
         """,
         unsafe_allow_html=True
     )
-    st.toast("👉 **Utilise** le menu haut à gauche. **>>**", icon="🕌")
+    st.divider()
+    with st.expander("📚 Qu’est-ce que Ilm Notes ?"):
+        st.markdown("""
+            **Ilm Notes** est un outil conçu pour les étudiants, enseignants et autodidactes
+            en sciences islamiques.
 
-    st.markdown("""
-    ### 📚 Qu’est-ce que Ilm Notes ?
-
-    **Ilm Notes** est un outil conçu pour les étudiants, enseignants et autodidactes
-    en sciences islamiques.
-
-    Il permet de :
-    - prendre des notes rapidement  
-    - les classer par catégories et thèmes  
-    - retrouver facilement une information  
-    - visualiser sur quoi tu travailles le plus
-    - réviser efficacement
-    - partager la science avec adab
+            Il permet de :
+            - prendre des notes rapidement  
+            - les classer par catégories et thèmes  
+            - retrouver facilement une information  
+            - visualiser sur quoi tu travailles le plus
+            - réviser efficacement
+            - partager la science avec adab
     
-    """)
+        """)
+    with st.expander("🎯 Pourquoi Ilm Notes ?"):
+        st.markdown("""
+            Parce que la science se perd facilement :
+            - dans les carnets éparpillés  
+            - dans les discussions WhatsApp  
+            - dans les fichiers non organisés  
 
-    st.markdown("""
-    ### 🎯 Pourquoi Ilm Notes ?
-
-    Parce que la science se perd facilement :
-    - dans les carnets éparpillés  
-    - dans les discussions WhatsApp  
-    - dans les fichiers non organisés  
-
-    **Ilm Notes t’aide à garder ton ‘ilm accessible et structuré.**
-    """)
+            **Ilm Notes t’aide à garder ton ‘ilm accessible et structuré.**
+        """)
     
-    st.markdown("""
-    ###  📚 Dans quel contexte ?
-
-    Ilm Notes s’utilise :
-    - pendant ou après un cours
-    - lors de la lecture d’un livre
-    - pour préparer un rappel ou un enseignement
-    - sur téléphone ou ordinateur
+    with st.expander("📚 Dans quel contexte ?"):
+        st.markdown(""" 
+        Ilm Notes s’utilise :
+        - pendant ou après un cours
+        - lors de la lecture d’un livre
+        - pour préparer un rappel ou un enseignement
+        - sur téléphone ou ordinateur
     
-    **L’objectif est d’avoir un espace calme, rapide et structuré.**
-    """)
+        **L’objectif est d’avoir un espace calme, rapide et structuré.**
+        """)
 
-    st.markdown("""
-    ### 🤲 Une intention
+    with st.expander("▶️ Nos plans"):
+        col1, col2 = st.columns(2)
+    
+        with col1:
+            with st.container(border=True):
+                st.markdown("### 📗 Plan GRATUIT")
+                st.markdown("""
+                    ✅ Ajouter jusqu'à **10 notes**
+            
+                    ✅ Organiser par catégories
+            
+                    ✅ Rechercher et filtrer
+            
+                    ✅ Réviser vos notes
+            
+                    ✅ Exporter en PDF
+            
+                    ✅ Partager via WhatsApp
+                """)
+                if st.button("▶️ Commencer GRATUIT", key="btn_free", use_container_width=True):
+                    st.session_state.next_page = "Note"
+    
+        with col2:
+            with st.container(border=True):
+                st.markdown("### ⭐ Plan PRO")
+                st.markdown("""
+                    ✅ Notes **ILLIMITÉES**
+            
+                    ✅ Ajouter des catégories
+            
+                    ✅ Suivi de la progression
+            
+                    ✅ Réviser vos notes
+            
+                    ✅ Exporter en PDF
+            
+                    ✅ Partager via WhatsApp
+            
+                """)
+                if st.button("💎 Passer au PRO", key="btn_pro", use_container_width=True):
+                    st.warning("Contactez l'administrateur pour l'abonnement PRO")
+                    st.info("""
+                        💳 Paiement Orange Money
 
-    Ilm Notes est un projet né avec l’intention de servir la science,
-    ses étudiants et ceux qui la transmettent.
-    """)
+                        📱 Numéro : 698 491 583 
+                        💰 Montant : 2 000 FCFA / mois  
+                        📝 Référence : Aicha Nsangou Mama Awouolou
 
+                        📩 Envoyez le screenshot sur WhatsApp :
+                        👉 https://wa.me/237698491583
+                    """)
+
+        st.markdown("✨ **Bien plus à venir In schaa Allah...**")
+        st.markdown("**Restez à l'écoute pour les futures mises à jour et fonctionnalités!**")
+        st.divider()
+        with st.container(border=True):
+            st.info("💡 Commencez gratuitement et passez au PRO quand vous êtes prêt!")
+    with st.expander("🧠 Vos avis compte"):
+        st.markdown("""
+            <style>   
+            .avis{
+                display: inline-block;
+                padding: 10px 20px;
+                background-color: #25D366;
+                color: white;
+                border-radius: 8px;
+                text-decoration: none;
+                font-weight: bold;
+                text-align:center;
+                margin-top: 20px;
+                }
+            </style>
+
+
+            <div class="avis">
+                <a href="https://wa.me/237698491583?text=Assalamu%20alaykum%2C%20j%27utilise%20Ilm%20Notes%20et%20voici%20mon%20avis%20:" 
+                target="_blank">
+                    💬 Mon avis 
+                </a>
+            </div>
+        """, unsafe_allow_html=True)
     st.info("🌱 Projet en phase de test (MVP) – Vos retours sont les bienvenus.")
 
-def page_home():
-    st.title("📘 Ilm Notes")
-    st.divider()
-    st.markdown("**Organiser, préserver et réviser la science**")
-    st.markdown("""
-    Ilm Notes est un outil simple destiné aux étudiants en sciences islamiques.
-    Il vous aide à structurer vos notes, réviser efficacement et partager la science avec adab.
-    """)
-    
-    st.divider()
-    st.header("🎯 Choisissez votre plan")
     
     # Afficher les deux plans côte à côte dans des containers
-    col1, col2 = st.columns(2)
     
-    with col1:
-        with st.container(border=True):
-            st.markdown("### 📗 Plan GRATUIT")
-            st.markdown("""
-            ✅ Ajouter jusqu'à **10 notes**
-            
-            ✅ Organiser par catégories
-            
-            ✅ Rechercher et filtrer
-            
-            ✅ Réviser vos notes
-            
-            ✅ Exporter en PDF
-            
-            ✅ Partager via WhatsApp
-            """)
-            if st.button("▶️ Commencer GRATUIT", key="btn_free", use_container_width=True):
-                st.session_state.next_page = "Ajouter une note"
-                st.info("Cliquez sur 'Ajouter une note' dans le menu")
-    
-    with col2:
-        with st.container(border=True):
-            st.markdown("### ⭐ Plan PRO")
-            st.markdown("""
-            ✅ Notes **ILLIMITÉES**
-            
-            ✅ Ajouter des catégories
-            
-            ✅ Suivi de la progression
-            
-            ✅ Réviser vos notes
-            
-            ✅ Exporter en PDF
-            
-            ✅ Partager via WhatsApp
-            
-            """)
-            if st.button("💎 Passer au PRO", key="btn_pro", use_container_width=True):
-                st.warning("Contactez l'administrateur pour l'abonnement PRO")
-                st.info("""
-                    💳 Paiement Orange Money
-
-                    📱 Numéro : 698 491 583 
-                    💰 Montant : 2 000 FCFA / mois  
-                    📝 Référence : Aicha Nsangou Mama Awouolou
-
-                    📩 Envoyez le screenshot sur WhatsApp :
-                    👉 https://wa.me/237698491583
-                """)
-
-    st.markdown("✨ **Bien plus à venir In schaa Allah...**")
-    st.markdown("**Restez à l'écoute pour les futures mises à jour et fonctionnalités!**")
-    st.divider()
-    with st.container(border=True):
-        st.info("💡 Commencez gratuitement et passez au PRO quand vous êtes prêt!")
 
 
 # --- Page: Ajouter une Note ---
@@ -346,6 +411,9 @@ def page_organisation_recherche(user_id):
             with col3:
                 if st.button("✏️ Modifier", key=f"edit_{note['id']}"):
                     st.session_state.edit_note_id = note["id"]
+                    st.succes("Note mise a jour")
+                    st.session_state.edit_note_id = None
+                    st.rerun()
             with col4:
                 if st.button("🗑️ Supprimer", key=f"del_{note['id']}"):
                     delete_note(note["id"])
@@ -549,7 +617,40 @@ def page_admin(user_id):
             #st.dataframe(notes_df, width='stretch')
         #else:
             #st.info("Aucune note enregistrée")
-            
+#login page
+def login_page():
+    col1, col2 = st.columns([1,2])
+    if is_logged_in() is False:
+        with col1:
+            with st.expander("🔐 Connexion"):
+                with st.container(border=True):
+                    email = st.text_input("Email")
+                    password = st.text_input("Mot de passe", type="password")
+                    if st.button("Se connecter"):
+                        with st.spinner("Chargement..."):
+                            res = login(email, password)
+                            if res["ok"]:
+                                st.session_state['user'] = res["user"]
+                                st.success("Connexion réussie")
+                            else:
+                                st.error(res["message"])
+                    if st.button("Nouveau compte"):
+                        with col2:       
+                            with st.expander("👤 Créer un compte"):
+                                with st.container(border=True):
+                                    full_name = st.text_input("Nom complet")
+                                    email2 = st.text_input("Email pour inscription")
+                                    password2 = st.text_input("Mot de passe", type="password", key="signup")
+                                    if st.button("S'inscrire"):
+                                        with st.spinner("Chargement..."):
+                                            res = signup(email2, password2, full_name)
+                                            if res["ok"]:
+                                                st.success(res["message"])
+                                            else:
+                                                st.error(res["message"])
+    else:
+        st.subheader(f"Marhaban {st.session_state['user']['full_name']}!")
+        st.button("Se déconnecter", on_click=logout)
 # -----------------------------
 # Démo
 # -----------------------------
@@ -637,7 +738,7 @@ def custom_footer():
             color: #444;
             border-top: 1px solid #ddd;
         }
-        </style>
+        </>
 
         <div class="ilm-footer">
             <strong>Ilm Notes</strong> 🌙<br>
@@ -654,7 +755,7 @@ def custom_header():
     """
     <style>
         /* Cacher uniquement le lien GitHub */
-        a[href="github.com"] {
+        .stAppHeader{
             display: none !important;
         }
     </style>
@@ -670,29 +771,5 @@ def custom_header():
         """,
         unsafe_allow_html=True
     )
-
-def avis():
-    st.sidebar.markdown("""
-        <style>   
-            .avis{
-                display: inline-block;
-                padding: 10px 20px;
-                background-color: #25D366;
-                color: white;
-                border-radius: 8px;
-                text-decoration: none;
-                font-weight: bold;
-                text-align:center;
-                margin-top: 20px;
-                }
-        </style>
-
-
-    <div class="avis">
-        <a href="https://wa.me/237698491583?text=Assalamu%20alaykum%2C%20j%27utilise%20Ilm%20Notes%20et%20voici%20mon%20avis%20:" 
-            target="_blank">
-            💬 Mon avis 
-        </a>
-    </div>
-""", unsafe_allow_html=True)
+  
 

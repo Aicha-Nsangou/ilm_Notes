@@ -15,7 +15,10 @@ from supalogic import (
     page_demo,
     custom_footer,
     custom_header,
-    page_admin
+    page_admin,
+    set_bg_local,
+    navbar_custom,
+    login_page
     
 )
 from supadb import is_admin
@@ -27,134 +30,83 @@ from supadb import is_admin
 st.set_page_config(
     page_title="Ilm Notes",
     page_icon="📘",
-    layout="centered"
+    layout="wide"
 )
+st.markdown("""
+    <style>
 
+        /* 🧾 Inputs */
+        input:focus, textarea:focus, select:focus {
+            border: 1px solid #2e7d32 !important;
+            outline:none;
+        }
+        /* 🔘 Boutons */
+        button {
+            border: none;
+        }
+
+    </style>
+""", unsafe_allow_html=True)
+
+# add bg image fixed
+set_bg_local("./ilm3.jpg")
 if "started" not in st.session_state:
     st.session_state["started"] = False
 
 # Custom header
 custom_header()
 
-# Add padding to avoid overlap with fixed footer
-st.markdown(
-    """
-    <style>
-    .main .block-container {
-        padding-bottom: 60px;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# -----------------------------
-# Sidebar – Navigation
-# -----------------------------
-st.sidebar.title("📚 Ilm Notes")
-
-with st.sidebar:
-    if is_logged_in() is False:
-        with st.expander("🔐 Connexion"):
-            email = st.text_input("Email")
-            password = st.text_input("Mot de passe", type="password")
-            if st.button("Se connecter"):
-                with st.spinner("Chargement..."):
-                    res = login(email, password)
-                    if res["ok"]:
-                        st.session_state['user'] = res["user"]
-                        st.success("Connexion réussie")
-                    else:
-                        st.error(res["message"])
-                
-        with st.expander("👤 Créer un compte"):
-            full_name = st.text_input("Nom complet")
-            email2 = st.text_input("Email pour inscription")
-            password2 = st.text_input("Mot de passe", type="password", key="signup")
-            if st.button("S'inscrire"):
-                with st.spinner("Chargement..."):
-                    res = signup(email2, password2, full_name)
-                    if res["ok"]:
-                        st.success(res["message"])
-                    else:
-                        st.error(res["message"])
-    else:
-        st.subheader(f"Marhaban {st.session_state['user']['full_name']}!")
-        st.button("Se déconnecter", on_click=logout)
 # Initialiser la page par défaut
 if "page" not in st.session_state:
-    st.session_state.page = "🏡 Accueil"
-    
+    st.session_state.page = " Accueil"
 
-st.sidebar.divider()
-page = st.sidebar.radio(
-    "Navigation",
-    ["🏡 Accueil", "📝 Ajouter une note", "🗂️ Organisation", "🔁 Révision", "📊 Progression","📘 Demo", "🛡️ Admin"]
-)
 
-st.session_state.page = page
-
-# Afficher la page d'accueil par défaut
-if st.session_state.page == "🏡 Accueil":
-    page_accueil()
-
-elif st.session_state.page == "📝 Ajouter une note":
-    # Demander le nom d'utilisateur si pas connecté
-    if is_logged_in():
-        page_ajouter_note(st.session_state['user']['id'])
-    else:
-        st.info("Connectez-vous pour accéder à vos notes.")
-
-elif st.session_state.page == "🗂️ Organisation":
-    if is_logged_in():
-        page_organisation_recherche(st.session_state['user']['id'])
-    else:
-        st.info("Connectez-vous pour accéder à vos notes.")
-
-elif st.session_state.page == "🔁 Révision":
-    if is_logged_in():
-         page_revision(st.session_state['user']['id'])
-    else:
-        st.info("Connectez-vous pour accéder à vos notes.")
-
-elif st.session_state.page == "📊 Progression":
-    if is_logged_in():
+col1,col2 = st.columns([1,2])
+# Barre de navigation
+with col1 :
+    selected = navbar_custom()
+    page = selected
+    st.session_state.page = page
+with col2:
+#lien avec les pages
+    if selected == "Accueil":
+        page_accueil()
+    elif selected == "Note":
+        if is_logged_in():
+            page_ajouter_note(st.session_state['user']['id'])
+        else:
+            st.info("Connectez-vous pour accéder à vos notes.")
+    elif selected == "Organisation":
+        if is_logged_in():
+            page_organisation_recherche(st.session_state['user']['id'])
+        else:
+            st.info("Connectez-vous pour accéder à vos notes.")
+    elif selected == "Révision":
+        if is_logged_in():
+            page_revision(st.session_state['user']['id'])
+        else:
+            st.info("Connectez-vous pour accéder à vos notes.")
+    elif selected == "Progression":
+        if is_logged_in():
          page_progression_notes(st.session_state['user']['id'])
-    else:
-        st.info("Connectez-vous pour accéder à vos notes.")
-elif st.session_state.page == "📘 Demo":
-    page_demo()
+        else:
+            st.info("Connectez-vous pour accéder à vos notes.")
+    elif selected == "Demo":
+        page_demo()
+    elif selected == "Admin":
+        if is_logged_in():
+            if not is_admin(st.session_state['user']['id']):
+                st.error("Accès interdit")
+                st.stop()
+            page_admin(st.session_state['user']['id'])
+        else:
+            st.info("Connectez-vous pour accéder à vos notes.")
+    elif selected == "Se connecter":
+        login_page()
 
-elif st.session_state.page == "🛡️ Admin":
-    if is_logged_in():
-        if not is_admin(st.session_state['user']['id']):
-            st.error("Accès interdit")
-            st.stop()
-        page_admin(st.session_state['user']['id'])
-    else:
-        st.info("Connectez-vous pour accéder à vos notes.")
-    
-st.sidebar.divider()
-st.sidebar.markdown("""
-    <div style="text-align:center; margin-top: 20px;">
-        <a href="https://wa.me/237698491583?text=Assalamu%20alaykum%2C%20j%27utilise%20Ilm%20Notes%20et%20voici%20mon%20avis%20:" 
-            target="_blank"
-            style="
-                display: inline-block;
-                padding: 10px 20px;
-                background-color: #25D366;
-                color: white;
-                border-radius: 8px;
-                text-decoration: none;
-                font-weight: bold;
-       ">
-           🧠 Mon avis 
-        </a>
-    </div>
-""", unsafe_allow_html=True)
 
 # -----------------------------
 # Pied de page
 # -----------------------------
 
-custom_footer()
+#custom_footer()

@@ -178,6 +178,7 @@ def is_admin(user_id):
     return res.data and res.data["is_admin"] is True
 
 def get_total_notes():
+    supabase = get_power()
     res = supabase.table("notes").select("id", count="exact").execute()
     return res.count or 0
 

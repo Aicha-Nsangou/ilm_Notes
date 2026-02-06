@@ -656,7 +656,6 @@ def login_page():
 # -----------------------------
 def page_demo():
     st.header("🎬 Démo d'Ilm Notes")
-    st.divider()
     st.markdown("""
     Voici une presentation démontrant les principales fonctionnalités d'Ilm Notes:
     
@@ -669,51 +668,48 @@ def page_demo():
     """)
     
     st.divider()
-    st.title("📘 Comment utiliser Ilm Notes")
-
     st.markdown("""
     **Ilm Notes** est un outil simple pour aider les étudiants en sciences islamiques
     à organiser, réviser et partager leurs notes بسهولة.
     """)
 
-    st.divider()
+    with st.expander("1️⃣ Ajouter une note"):
+        st.markdown("""
+            - Choisis une **catégorie** (Fiqh, Aqida, Tafsir, Hadith, etc.)
+            - Écris ta note
+            - Ajoute une **référence** si nécessaire
+            - Clique sur **Ajouter**
+            - Va sur **Organisation** pour voir la note
+        """)
+    
+    with st.expander("2️⃣ Organiser ses notes"):
+        st.markdown("""
+            - Utilise le **filtre par catégorie**
+            - Retrouve facilement ce que tu as déjà étudié
+        """)
 
-    st.subheader("1️⃣ Ajouter une note")
-    st.markdown("""
-    - Choisis une **catégorie** (Fiqh, Aqida, Tafsir, Hadith, etc.)
-    - Écris ta note
-    - Ajoute une **référence** si nécessaire
-    - Clique sur **Ajouter**
-    """)
+    with st.expander("3️⃣ Suivre ta progression"):
+        st.markdown("""
+            - Le graphique montre **sur quelles catégories tu travailles le plus**
+            - Plus tu ajoutes de notes, plus ta courbe évolue
+        """)
+    
+    with st.expander("4️⃣ Partager une note"):
+        st.markdown("""
+            - Clique sur **Copier pour WhatsApp**
+            - La note est formatée proprement
+            - Tu peux la coller directement dans un groupe ou une chaîne
+        """)
+    
+    with st.expander("5️⃣ Version gratuite et Pro"):
+        st.markdown("""
+            **Gratuit**
+            - Jusqu’à 10 notes
 
-    st.subheader("2️⃣ Organiser ses notes")
-    st.markdown("""
-    - Utilise le **filtre par catégorie**
-    - Retrouve facilement ce que tu as déjà étudié
-    """)
-
-    st.subheader("3️⃣ Suivre ta progression")
-    st.markdown("""
-    - Le graphique montre **sur quelles catégories tu travailles le plus**
-    - Plus tu ajoutes de notes, plus ta courbe évolue
-    """)
-
-    st.subheader("4️⃣ Partager une note")
-    st.markdown("""
-    - Clique sur **Copier pour WhatsApp**
-    - La note est formatée proprement
-    - Tu peux la coller directement dans un groupe ou une chaîne
-    """)
-
-    st.subheader("5️⃣ Version gratuite et Pro")
-    st.markdown("""
-    **Gratuit**
-    - Jusqu’à 10 notes
-
-    **Pro**
-    - Notes illimitées
-    - Accès complet
-    """)
+            **Pro**
+            - Notes illimitées
+            - Accès complet
+        """)
 
     st.divider()
 

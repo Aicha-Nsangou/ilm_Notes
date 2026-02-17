@@ -5,22 +5,8 @@
 # Intention : خدمة العلم – au service de la science
 
 import streamlit as st
-from auth import signup, login, logout, is_logged_in
-from supalogic import (
-    page_accueil,
-    page_ajouter_note,
-    page_organisation_recherche,
-    page_revision,
-    page_progression_notes,
-    page_demo,
-    custom_footer,
-    custom_header,
-    page_admin,
-    set_bg_local,
-    navbar_custom,
-    login_page
-    
-)
+from auth import  is_logged_in,auto_login
+from supalogic import *
 from supadb import is_admin
 
 
@@ -30,7 +16,7 @@ from supadb import is_admin
 st.set_page_config(
     page_title="Ilm Notes",
     page_icon="📘",
-    layout="wide"
+    layout="centered"
 )
 st.markdown("""
     <style>
@@ -47,63 +33,70 @@ st.markdown("""
 
     </style>
 """, unsafe_allow_html=True)
-
 # add bg image fixed
 set_bg_local("./ilm3.jpg")
-if "started" not in st.session_state:
-    st.session_state["started"] = False
+if "user" not in st.session_state:
+    user = auto_login()
+    if user:
+        st.session_state["user"] = user
+
+def get_current_user():
+    if "user" in st.session_state and st.session_state["user"]:
+        return st.session_state["user"]
+    return None
 
 # Custom header
 custom_header()
-
 # Initialiser la page par défaut
-if "page" not in st.session_state:
-    st.session_state.page = " Accueil"
-
-
-col1,col2 = st.columns([1,2])
+user = get_current_user()
+col1,col2 = st.columns([2,1])
 # Barre de navigation
-with col1 :
+with col2 :
     selected = navbar_custom()
     page = selected
-    st.session_state.page = page
-with col2:
+
+with col1:
+
+    if user:
+        user_id = user.id
+    else:
+        user_id = None
+
 #lien avec les pages
-    if selected == "Accueil":
-        page_accueil()
-    elif selected == "Note":
+    if selected == "Note":
         if is_logged_in():
-            page_ajouter_note(st.session_state['user']['id'])
+            page_ajouter_note(user_id)
         else:
-            st.info("Connectez-vous pour accéder à vos notes.")
+           login_page()
+
     elif selected == "Organisation":
         if is_logged_in():
-            page_organisation_recherche(st.session_state['user']['id'])
+            page_organisation_recherche(user_id)
         else:
-            st.info("Connectez-vous pour accéder à vos notes.")
+           login_page()
+
     elif selected == "Révision":
         if is_logged_in():
-            page_revision(st.session_state['user']['id'])
+            page_revision(user_id)
         else:
-            st.info("Connectez-vous pour accéder à vos notes.")
+           login_page()
+
     elif selected == "Progression":
         if is_logged_in():
-         page_progression_notes(st.session_state['user']['id'])
+         page_progression_notes(user_id)
         else:
-            st.info("Connectez-vous pour accéder à vos notes.")
-    elif selected == "Demo":
+            login_page()
+
+    elif selected == "Compte":
         page_demo()
     elif selected == "Admin":
         if is_logged_in():
-            if not is_admin(st.session_state['user']['id']):
+            if not is_admin(user_id):
                 st.error("Accès interdit")
                 st.stop()
-            page_admin(st.session_state['user']['id'])
+            page_admin(user_id)
         else:
-            st.info("Connectez-vous pour accéder à vos notes.")
-    elif selected == "Se connecter":
-        login_page()
-
+            login_page()
 
 # -----------------------------
 # Pied de page

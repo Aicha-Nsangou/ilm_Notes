@@ -7,7 +7,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 from datetime import datetime, timedelta
-from auth import signup, login, logout, is_logged_in
+from auth import signup, login, logout, is_logged_in,auto_login
 from supadb import ( 
                 can_add_note,
                 get_user_plan,
@@ -21,7 +21,7 @@ from supadb import (
                 get_note_counts_by_category,
                 get_all_users_admin,
                 upgrade_plan,count_user_pro,
-                downgrade_plan,get_total_notes
+                downgrade_plan,get_total_notes,is_admin
                 
                 )
 
@@ -91,29 +91,68 @@ def set_bg_local(image_file):
     
 #navbar
 def navbar_custom():
-    selected = option_menu(
-    menu_title=None,
-    options=["Accueil", "Note", "Organisation", "Révision", "Progression","Demo", "Admin","Se connecter"],
-    icons=["house", "pencil-square", "folder2-open", "arrow-repeat", "bar-chart", "book", "shield-lock"],
-    menu_icon="bookshelf",
-    default_index=0,
-    orientation="vertical",
-    styles={
-        "container": {"margin":"0px","background-color": "#f0f2f6", "border-radius": "5px","width":"100%"},
-        "icon": {"color": "olive", "font-size": "20px"}, 
-        "nav-link": {
-            "font-size": "16px",
-            "text-align": "center",
-            "margin":"0px",
-            "color": "black",
-            "--hover-color": "#eee",
-            "display":"flex",
-            "justify-content":"start",
-            "align-items":"center"
-        },
-        "nav-link-selected": {"border-bottom": "5px solid crimson", "background-color": "#f0f2f6", "border-radius": "1px"},
-    }
-    )
+    if "page" not in st.session_state:
+        st.session_state.page = "Note"
+    # --- CSS pour navbar fixe ---
+    st.markdown("""
+        <style>
+        .main {
+            padding-bottom: 90px;
+        }
+        div[data-testid="stVerticalBlock"]:has(.whatsapp-footer) {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            border-top: 1px solid #ddd;
+            z-index: 1000;
+            padding-top: 5px;
+        }
+        .whatsapp-footer .nav-link {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 12px !important;
+            color: #444 !important;
+        }
+        .whatsapp-footer .icon {
+            font-size: 20px !important;
+            margin-bottom: 3px !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown('<div class="bottom-nav">', unsafe_allow_html=True)
+    
+    footer = st.container()
+    with footer:
+        selected = option_menu(
+        menu_title=None,
+        options= ["Note", "Organisation", "Révision", "Progression","Compte"],
+        icons=["pencil-square", "folder2-open", "arrow-repeat", "bar-chart", "person", "shield-lock"],
+        menu_icon="cast",
+        default_index=["Note", "Organisation", "Révision", "Progression","Compte"].index(st.session_state.page),
+        orientation="horizontal",
+        styles={
+            "container": { "padding": "0!important","background-color": "#f0f2f6", "border-radius": "5px"},
+            "icon": {"color": "olive", "font-size": "20px"}, 
+            "nav-link": {
+                "font-size": "16px",
+                "text-align": "center",
+                "margin":"0px",
+                "color": "black",
+                "--hover-color": "#eee",
+                "display":"flex",
+                "flex-direction": "column",
+                "justify-content":"start",
+                "align-items":"center",
+            },
+            "nav-link-selected": {"border-bottom": "5px solid crimson", "background-color": "#f0f2f6", "border-radius": "1px","font-weight": "bold"},
+        }
+        )
+        st.markdown('<div class="whatsapp-footer"></div>', unsafe_allow_html=True)
+    st.session_state.page = selected
     return selected
 
 # -----------------------------
@@ -619,6 +658,7 @@ def page_admin(user_id):
             #st.info("Aucune note enregistrée")
 #login page
 def login_page():
+    
     col1, col2 = st.columns([1,2])
     if is_logged_in() is False:
         with col1:
@@ -630,7 +670,7 @@ def login_page():
                         with st.spinner("Chargement..."):
                             res = login(email, password)
                             if res["ok"]:
-                                st.session_state['user'] = res["user"]
+                                st.session_state['user'] = auto_login()
                                 st.success("Connexion réussie")
                             else:
                                 st.error(res["message"])
@@ -649,60 +689,71 @@ def login_page():
                                             else:
                                                 st.error(res["message"])
     else:
-        st.subheader(f"Marhaban {st.session_state['user']['full_name']}!")
+        st.subheader(f"Marhaban !")
         st.button("Se déconnecter", on_click=logout)
 # -----------------------------
 # Démo
 # -----------------------------
 def page_demo():
-    st.header("🎬 Démo d'Ilm Notes")
-    st.markdown("""
-    Voici une presentation démontrant les principales fonctionnalités d'Ilm Notes:
-    
-    - Ajouter et organiser des notes
-    - Réviser efficacement
-    - Suivre la progression
-    - Exporter et partager des notes
-    
-    *Vidéo à venir In schaa Allah...*
-    """)
-    
-    st.divider()
-    st.markdown("""
-    **Ilm Notes** est un outil simple pour aider les étudiants en sciences islamiques
-    à organiser, réviser et partager leurs notes بسهولة.
-    """)
-
-    with st.expander("1️⃣ Ajouter une note"):
+    tab1,tab2,tab3= st.tabs(["Comptes","A propos de Ilm Notes","Demo"])
+    with tab1:
+        login_page()
+        st.divider()
+        if is_admin(st.session_state["user"].id):
+            page_admin(st.session_state["user"].id)
+        
+    with tab2:
+        page_accueil()
+        
+    with tab3:
+        st.header("🎬 Démo d'Ilm Notes")
         st.markdown("""
+            Voici une presentation démontrant les principales fonctionnalités d'Ilm Notes:
+    
+            - Ajouter et organiser des notes
+            - Réviser efficacement
+            - Suivre la progression
+            - Exporter et partager des notes
+    
+            *Vidéo à venir In schaa Allah...*
+        """)
+    
+        st.divider()
+        st.markdown("""
+            **Ilm Notes** est un outil simple pour aider les étudiants en sciences islamiques
+            à organiser, réviser et partager leurs notes بسهولة.
+        """)
+
+        with st.expander("1️⃣ Ajouter une note"):
+            st.markdown("""
             - Choisis une **catégorie** (Fiqh, Aqida, Tafsir, Hadith, etc.)
             - Écris ta note
             - Ajoute une **référence** si nécessaire
             - Clique sur **Ajouter**
             - Va sur **Organisation** pour voir la note
-        """)
+            """)
     
-    with st.expander("2️⃣ Organiser ses notes"):
-        st.markdown("""
+        with st.expander("2️⃣ Organiser ses notes"):
+            st.markdown("""
             - Utilise le **filtre par catégorie**
             - Retrouve facilement ce que tu as déjà étudié
-        """)
+            """)
 
-    with st.expander("3️⃣ Suivre ta progression"):
-        st.markdown("""
+        with st.expander("3️⃣ Suivre ta progression"):
+            st.markdown("""
             - Le graphique montre **sur quelles catégories tu travailles le plus**
             - Plus tu ajoutes de notes, plus ta courbe évolue
-        """)
+            """)
     
-    with st.expander("4️⃣ Partager une note"):
-        st.markdown("""
+        with st.expander("4️⃣ Partager une note"):
+            st.markdown("""
             - Clique sur **Copier pour WhatsApp**
             - La note est formatée proprement
             - Tu peux la coller directement dans un groupe ou une chaîne
-        """)
+            """)
     
-    with st.expander("5️⃣ Version gratuite et Pro"):
-        st.markdown("""
+        with st.expander("5️⃣ Version gratuite et Pro"):
+            st.markdown("""
             **Gratuit**
             - Jusqu’à 10 notes
 
@@ -711,7 +762,7 @@ def page_demo():
             - Accès complet
         """)
 
-    st.divider()
+        st.divider()
 
     st.markdown("""
     > *Qu’Allah mette la baraka dans ce savoir  
@@ -767,5 +818,3 @@ def custom_header():
         """,
         unsafe_allow_html=True
     )
-  
-

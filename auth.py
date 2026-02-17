@@ -1,6 +1,17 @@
 import streamlit as st
 from supabase_client import supabase
 from datetime import datetime
+from streamlit_cookies_manager import EncryptedCookieManager
+
+
+#initialisation des cookies securiser
+cookies = EncryptedCookieManager(
+    prefix="monapp_",
+    password=st.secrets["COOKIE_PASSWORD"],
+) 
+
+if not cookies.ready():
+    st.stop()
 
 def signup(email: str, password: str, full_name: str) -> dict:
     """
@@ -50,7 +61,7 @@ def login(email: str, password: str) -> dict:
             "email": email,
             "password": password
         })
-
+        
         user = res.user
            
         if not user:
@@ -58,7 +69,20 @@ def login(email: str, password: str) -> dict:
                 "ok": False,
                 "message": "Identifiants invalides"
             }
-
+        
+        if res.session:
+            cookies["access_token"]= res.session.access_token
+            cookies["refresh_token"]=res.session.refresh_token
+            cookies.save()
+            return {
+                "ok": True,
+                "message": "session disponible",
+                "user": {
+                    "id": user.id,
+                    "full_name": user.user_metadata.get("full_name", "")
+                }
+            }
+        
         
            
         # ⛔ Email non confirmé
@@ -101,17 +125,35 @@ def login(email: str, password: str) -> dict:
             "ok": False,
             "message": f"Erreur login : {e}"
         }
-
+        
+def auto_login():
+    """Verifie si une session existe deja, restaure automatiquement l'utilisateur"""
+    if "access_token" in cookies and "refresh_token" in cookies:
+        try:
+            session = supabase.auth.set_session(
+                cookies["access_token"],
+                cookies["refresh_token"]
+            )
+            return session.user
+        except:
+            logout()
+    return None
 
 # -------------------------
 # Logout
 # -------------------------
 def logout():
+    """Deconnexion complete : 
+    -suppression cookies
+    -reset session supabase"""
     try:
         supabase.auth.sign_out()
     except Exception as e:
         st.error(f"Erreur de déconnexion : {e}")
     
+    cookies.pop("access_token",None)
+    cookies.pop("refresh_token", None)
+    cookies.save()
     if 'user' in st.session_state:
         del st.session_state['user']
     st.success("Déconnecté avec succès")

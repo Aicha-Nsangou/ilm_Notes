@@ -104,7 +104,7 @@ def navbar_custom():
             font-size: 12px !important;
             color: #444 !important;
         }
-        .whatsapp-footer .icon {
+        c .icon {
             font-size: 20px !important;
             margin-bottom: 3px !important;
         }
@@ -113,9 +113,7 @@ def navbar_custom():
     
     st.markdown('<div class="bottom-nav">', unsafe_allow_html=True)
     
-    footer = st.container()
-    with footer:
-        selected = option_menu(
+    selected = option_menu(
         menu_title=None,
         options= ["Note", "Organisation", "Révision", "Progression","Compte"],
         icons=["pencil-square", "folder2-open", "arrow-repeat", "bar-chart", "person", "shield-lock"],
@@ -127,14 +125,13 @@ def navbar_custom():
                 "padding": "0!important",
                 "background-color": "#f0f2f6", 
                 "border-radius": "5px",
-                "width":"500px",
+                "width":"100%",
                 },
             "icon": {"color": "olive", "font-size": "20px"}, 
             "nav-link": {
                 "font-size": "16px",
                 "text-align": "center",
                 "margin":"0!important",
-                "width":"100px",
                 "color": "black",
                 "--hover-color": "#eee",
                 "display":"flex",
@@ -145,7 +142,6 @@ def navbar_custom():
             "nav-link-selected": {"border-bottom": "5px solid crimson", "background-color": "#f0f2f6", "border-radius": "1px","font-weight": "bold"},
         }
         )
-        st.markdown('<div class="whatsapp-footer"></div>', unsafe_allow_html=True)
     st.session_state.page = selected
     return selected
 

@@ -49,20 +49,24 @@ def get_current_user():
 custom_header()
 # Initialiser la page par défaut
 user = get_current_user()
-col1,col2 = st.columns([2,1])
+contenu = st.container(border=True)
+with contenu:
+    st.markdown("""""")
 # Barre de navigation
-with col2 :
-    selected = navbar_custom()
-    page = selected
+st.sidebar.title("Dashboard")
 
-with col1:
+
+selected = navbar_custom()
+page = selected
+
+with contenu:
 
     if user:
         user_id = user.id
     else:
         user_id = None
 
-#lien avec les pages
+    #lien avec les pages
     if selected == "Note":
         if is_logged_in():
             page_ajouter_note(user_id)

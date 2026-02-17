@@ -89,14 +89,6 @@ with col1:
 
     elif selected == "Compte":
         page_demo()
-    elif selected == "Admin":
-        if is_logged_in():
-            if not is_admin(user_id):
-                st.error("Accès interdit")
-                st.stop()
-            page_admin(user_id)
-        else:
-            login_page()
 
 # -----------------------------
 # Pied de page

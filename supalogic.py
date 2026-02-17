@@ -96,18 +96,6 @@ def navbar_custom():
     # --- CSS pour navbar fixe ---
     st.markdown("""
         <style>
-        .main {
-            padding-bottom: 90px;
-        }
-        div[data-testid="stVerticalBlock"]:has(.whatsapp-footer) {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            border-top: 1px solid #ddd;
-            z-index: 1000;
-            padding-top: 5px;
-        }
         .whatsapp-footer .nav-link {
             display: flex !important;
             flex-direction: column !important;
@@ -135,12 +123,18 @@ def navbar_custom():
         default_index=["Note", "Organisation", "Révision", "Progression","Compte"].index(st.session_state.page),
         orientation="horizontal",
         styles={
-            "container": { "padding": "0!important","background-color": "#f0f2f6", "border-radius": "5px"},
+            "container": {
+                "padding": "0!important",
+                "background-color": "#f0f2f6", 
+                "border-radius": "5px",
+                "width":"500px",
+                },
             "icon": {"color": "olive", "font-size": "20px"}, 
             "nav-link": {
                 "font-size": "16px",
                 "text-align": "center",
-                "margin":"0px",
+                "margin":"0!important",
+                "width":"100px",
                 "color": "black",
                 "--hover-color": "#eee",
                 "display":"flex",
